@@ -1,0 +1,40 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EcoFinds – Sign up</title>
+<link rel="stylesheet" href="styles.css" />
+<script defer src="app.js"></script>
+<script defer>
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('signup').onclick = () => {
+    const email = document.getElementById('email').value.trim();
+    const username = document.getElementById('username').value.trim();
+    const pwd = document.getElementById('pwd').value.trim();
+    if(!email || !username || !pwd) return alert('Fill all fields');
+    const users = read(storeKey.users, []);
+    if(users.some(u=>u.email===email)) return alert('Email already exists');
+    const u = {id: uid(), email, username, password: pwd, points:0, rating:4.0, eco_credits:0};
+    users.push(u); write(storeKey.users, users);
+    alert('Account created successfully! Please log in.');
+    window.location.href = 'login.html';
+  }
+});
+</script>
+</head>
+<body>
+<div class="container" style="max-width:640px;margin-top:40px">
+  <div class="panel">
+    <h2>Create Account</h2>
+    <div class="kv"><label>Email</label><input id="email" class="input" placeholder="you@example.com" /></div>
+    <div class="kv"><label>Username</label><input id="username" class="input" placeholder="yourname" /></div>
+    <div class="kv"><label>Password</label><input id="pwd" type="password" class="input" /></div>
+    <div class="list" style="margin-top:8px"><button class="btn" id="signup">Sign up</button></div>
+    <hr class="sep">
+    <div class="small">Have an account? <a class="link" href="login.html">Log in</a></div>
+  </div>
+</div>
+</body>
+</html>

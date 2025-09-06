@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EcoFinds – Browse</title>
+<link rel="stylesheet" href="styles.css" />
+<script defer src="app.js"></script>
+<script defer>
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(location.search);
+  const q = params.get('q')||'';
+  const category = params.get('category')||'All';
+  document.getElementById('q').value = q;
+  document.getElementById('cat').value = category;
+
+  // Eco only toggle
+  const ecoOnly = document.getElementById('ecoOnly');
+  ecoOnly.addEventListener('change', () => renderProducts(q, category, ecoOnly.checked));
+
+  renderProducts(q, category, ecoOnly.checked);
+
+  const u = currentUser();
+  if(u) {
+    document.getElementById('username').textContent = u.username;
+    document.getElementById('avatar').textContent = (u.username||'U').slice(0,1).toUpperCase();
+    document.getElementById('points').textContent =
+      (u.points||0) + ' points • ' + (u.eco_credits||0) + ' eco credits';
+
+    // progress bar to next tier
+    const credits = u.eco_credits||0;
+    const rate = discountRate(credits);
+    const next = nextTierInfo(credits);
+    const panel = document.getElementById('ecoProgressPanel');
+    const bar = document.getElementById('ecoBar');
+    const tierLabel = document.getElementById('ecoTierLabel');
+    const nextLabel = document.getElementById('ecoNextLabel');
+
+    panel.style.display = 'block';
+    tierLabel.textContent = `Tier: ${Math.round(rate*100)}% off`;
+    if(next.nextAt === null){
+      nextLabel.textContent = 'You’re at the max tier 🎉';
+      bar.style.width = '100%';
+    }else{
+      const start = credits < 3 ? 0 : (credits < 6 ? 3 : 6);
+      const span = next.nextAt - start;
+      const progress = Math.min(1, (credits - start) / span) * 100;
+      nextLabel.textContent = `Next tier: ${next.nextAt} eco credits (${Math.round(next.rate*100)}% off)`;
+      bar.style.width = progress + '%';
+    }
+  }
+});
+
+function renderProducts(q, category, ecoOnly=false){
+  let list = filterProducts(q, category);
+  if(ecoOnly) list = list.filter(p => Number(p.years_used||0) >= 2);
+  const grid = document.getElementById('grid');
+  grid.innerHTML = list.map(p => `
+    <article class="card">
+      <a class="thumb" href="product.html?id=${p.id}">
+        <img
+          src="${p.cover_image_url || ''}"
+          alt="product image"
+          onerror="this.onerror=null; this.src='https://via.placeholder.com/480x360?text=No+Image';">
+        ${Number(p.years_used||0) >= 2 ? '<span class="eco-badge">ECO +2y</span>' : ''}
+      </a>
+      <div class="card-body">
+        <div class="title"><a href="product.html?id=${p.id}">${p.title}</a></div>
+        <div class="meta">
+          <span class="price">${money(p.price_cents)}</span>
+          <span class="muted">${p.category}</span>
+        </div>
+        <div class="actions">
+          <button class="mini" onclick="addToCart('${p.id}')">Add to Cart</button>
+          <a class="mini" href="product.html?id=${p.id}">View</a>
+        </div>
+      </div>
+    </article>
+  `).join('');
+}
+
+function addToCart(pid){
+  const u = currentUser();
+  if(!u) return window.location.href='login.html';
+  Cart.add(u.id, pid, 1);
+  alert('Added to cart');
+}
+</script>
+</head>
+<body>
+
+<header class="header">
+  <div class="nav">
+    <a class="logo" href="index.html" title="EcoFinds Home">
+      <span class="dot"></span><span>EcoFinds</span>
+    </a>
+    <form action="index.html" method="GET" class="searchbar" id="searchForm">
+      <input name="q" id="q" placeholder="Search by title…" />
+      <select name="category" id="cat">
+        <option>All</option>
+        <option>Clothing</option>
+        <option>Electronics</option>
+        <option>Furniture</option>
+        <option>Books</option>
+        <option>Sports</option>
+        <option>Kids</option>
+      </select>
+      <!-- ✅ New eco filter -->
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;">
+        <input type="checkbox" id="ecoOnly"> Eco only
+      </label>
+      <button class="btn" type="submit">Search</button>
+    </form>
+    <div class="header-links">
+      <a class="btn ghost" href="dashboard.html">Dashboard</a>
+      <a class="btn ghost" href="cart.html">Cart</a>
+      <a class="btn secondary" href="orders.html">My Purchases</a>
+      <button class="btn" id="postItemBtn" onclick="window.location.href='dashboard.html#new'">Post an Item</button>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <div>
+      <h1>Buy & sell pre-owned items</h1>
+      <p>Extend product life. Save money. Reduce waste.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ✅ New eco progress bar -->
+<div class="panel" id="ecoProgressPanel" style="margin:16px 0; display:none">
+  <div class="eco-meta">
+    <span id="ecoTierLabel" class="eco-chip">Tier: 0% off</span>
+    <span id="ecoNextLabel">Next tier: 3 eco credits</span>
+  </div>
+  <div class="eco-progress" aria-label="Eco discount progress">
+    <div class="eco-bar" id="ecoBar" style="width:0%"></div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="layout">
+    <main>
+      <div class="grid" id="grid"></div>
+    </main>
+    <aside class="side">
+      <div class="panel">
+        <div class="profile">
+          <div class="avatar" id="avatar">U</div>
+          <div>
+            <div id="username">Guest</div>
+            <div class="stars" id="stars">★★★★☆</div>
+            <div class="small" id="points">0 points</div>
+          </div>
+        </div>
+        <hr class="sep">
+        <div class="list">
+          <button class="btn" onclick="window.location.href='dashboard.html'">Manage My Listings</button>
+          <button class="btn ghost" onclick="window.location.href='cart.html'">View Cart</button>
+          <button class="btn ghost" onclick="window.location.href='orders.html'">Previous Purchases</button>
+          <button class="btn" onclick="signOut()">Sign out</button>
+        </div>
+      </div>
+      <div class="panel notice">
+        Tip: Eco badge appears on items used ≥ 2 years. Buying eco items earns credits and tiered discounts.
+      </div>
+    </aside>
+  </div>
+</div>
+
+</body>
+</html>

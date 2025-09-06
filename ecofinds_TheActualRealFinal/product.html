@@ -1,0 +1,92 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EcoFinds – Product</title>
+<link rel="stylesheet" href="styles.css" />
+<script defer src="app.js"></script>
+<script defer>
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+  const p = Product.find(id);
+  if(!p) { document.getElementById('content').innerHTML='<p>Product not found.</p>'; return; }
+  document.getElementById('title').textContent = p.title;
+  document.getElementById('price').textContent = money(p.price_cents);
+  document.getElementById('cat').textContent = p.category;
+  document.getElementById('desc').textContent = p.description || '—';
+  document.getElementById('img').src = p.cover_image_url || 'https://via.placeholder.com/480x360?text=No+Image';
+  document.getElementById('buy').onclick = () => {
+    const u = currentUser(); if(!u) return window.location.href='login.html';
+    Cart.add(u.id, p.id, 1);
+    window.location.href='cart.html';
+  }
+});
+</script>
+</head>
+<body>
+
+<header class="header">
+  <div class="nav">
+    <a class="logo" href="index.html" title="EcoFinds Home">
+      <span class="dot"></span><span>EcoFinds</span>
+    </a>
+    <form action="index.html" method="GET" class="searchbar" id="searchForm">
+      <input name="q" id="q" placeholder="Search by title…" />
+      <select name="category" id="cat">
+        <option>All</option>
+        <option>Clothing</option>
+        <option>Electronics</option>
+        <option>Furniture</option>
+        <option>Books</option>
+        <option>Sports</option>
+        <option>Kids</option>
+      </select>
+      <button class="btn" type="submit">Search</button>
+    </form>
+    <div class="header-links">
+      <a class="btn ghost" href="dashboard.html">Dashboard</a>
+      <a class="btn ghost" href="cart.html">Cart</a>
+      <a class="btn secondary" href="orders.html">My Purchases</a>
+      <button class="btn" id="postItemBtn" onclick="window.location.href='dashboard.html#new'">Post an Item</button>
+    </div>
+  </div>
+</header>
+
+<div class="container" id="content">
+  <div class="layout">
+    <main>
+      <div class="card">
+        <div class="thumb"><img id="img" alt="product image"></div>
+        <div class="card-body">
+          <h2 class="title" id="title">Title</h2>
+          <div class="meta"><span class="price" id="price">₹0.00</span><span class="muted" id="cat">Category</span></div>
+          <hr class="sep">
+          <p id="desc"></p>
+          <div class="actions" style="margin-top:8px"><button class="btn" id="buy">Add to Cart</button></div>
+        </div>
+      </div>
+    </main>
+    <aside class="side">
+      <div class="panel">
+        <div class="list">
+          <div><strong>Seller:</strong> demo seller</div>
+          <div><strong>Pickup:</strong> Preferred</div>
+          <div><strong>Condition:</strong> Gently used</div>
+        </div>
+      </div>
+      <div class="panel notice">
+        This is a static demo. Images are filenames in the root folder.
+      </div>
+    </aside>
+  </div>
+</div>
+
+<footer class="footer small">
+  EcoFinds prototype • Desktop-only • Local demo data (stored in your browser)
+</footer>
+
+</body>
+</html>

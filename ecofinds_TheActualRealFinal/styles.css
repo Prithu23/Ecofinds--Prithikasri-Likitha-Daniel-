@@ -1,0 +1,133 @@
+
+/* EcoFinds desktop prototype */
+:root{
+  --bg:#f5f6f8; --ink:#121826; --card:#ffffff; --muted:#6b7280;
+  --brand:#1f9d55; --ring: rgba(52,211,153,.35); --border:#e5e7eb;
+}
+*{box-sizing:border-box}
+html,body{margin:0;font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+a{text-decoration:none;color:inherit}
+.container{max-width:1200px;margin:0 auto;padding:16px}
+.header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--border)}
+.nav{max-width:1200px;margin:0 auto;display:flex;gap:12px;align-items:center;padding:12px 16px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.2px}
+.logo .dot{width:10px;height:10px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 4px var(--ring)}
+.searchbar{display:flex;gap:8px;align-items:center;border:1px solid var(--border);padding:8px 10px;border-radius:10px;background:#fafafa;min-width:460px}
+.searchbar input,.searchbar select{border:0;background:transparent;outline:none;font-size:14px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;font-weight:600;background:var(--brand);color:white;border:0;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.06)}
+.btn.secondary{background:#111827;color:white}
+.btn.ghost{background:white;border:1px solid var(--border);color:#111827}
+.header-links{margin-left:auto;display:flex;gap:8px;align-items:center}
+.hero{background:linear-gradient(120deg,#0f172a,#052e16);color:white}
+.hero .container{display:flex;align-items:center;justify-content:space-between;padding:22px 16px}
+.hero h1{margin:0;font-size:22px;font-weight:800}
+.hero p{margin:6px 0 0;color:#cbd5e1;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.thumb{aspect-ratio:4/3;background:#e5e7eb;position:relative}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.card-body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px}
+.title{font-weight:700;font-size:14px;line-height:1.2;min-height:34px}
+.meta{display:flex;align-items:center;justify-content:space-between;font-size:13px}
+.price{font-weight:800}
+.actions{display:flex;gap:8px}
+.mini{padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:#fff;font-size:12px;cursor:pointer}
+.layout{display:grid;grid-template-columns:1fr 320px;gap:16px}
+.side{display:flex;flex-direction:column;gap:16px}
+.panel{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px}
+.profile{display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:center}
+.avatar{width:64px;height:64px;border-radius:999px;background:#e5e7eb;display:grid;place-items:center;font-weight:800;color:#64748b}
+.stars{color:#f59e0b;letter-spacing:1px;font-size:14px}
+.muted{color:var(--muted)}
+.list{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);background:#fff;border-radius:12px;padding:10px 12px}
+.kv{display:grid;grid-template-columns:180px 1fr;gap:8px;align-items:center}
+.input,.select,.textarea{border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;background:#fff;outline:none}
+.input:focus,.select:focus,.textarea:focus{box-shadow:0 0 0 3px var(--ring)}
+.table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.table th,.table td{border-bottom:1px solid var(--border);padding:10px 12px;text-align:left;font-size:14px}
+.table th{background:#fafafa}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;border:1px solid var(--border);border-radius:999px;padding:6px 10px;background:#fff;color:#111827}
+
+/* Eco Credits Styling */
+.eco-credits-section {
+  background: linear-gradient(135deg, #f0f8f0, #e8f5e8);
+  border: 1px solid #c3e6c3;
+}
+
+.eco-credits-display {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.credits-count {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1f9d55;
+}
+
+.credits-tier {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d5a2d;
+}
+
+.credits-next {
+  font-size: 12px;
+  color: #4a7c59;
+  font-style: italic;
+}
+
+.order-summary {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.eco-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: #1f9d55;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.footer{margin:24px 0;color:#6b7280;text-align:center}
+.link{color:#0ea5e9}
+hr.sep{border:0;border-top:1px solid var(--border);margin:16px 0}
+.notice{padding:10px 12px;border:1px dashed var(--border);background:#f8fafc;border-radius:12px;font-size:13px;color:#334155}
+.small{font-size:12px;color:#64748b}
+/* ECO UI */
+.eco-badge{
+  position:absolute;left:8px;top:8px;
+  background:linear-gradient(180deg,#22c55e,#16a34a);
+  color:#fff;font-weight:800;font-size:11px;
+  padding:6px 8px;border-radius:999px;box-shadow:0 1px 0 rgba(0,0,0,.1);
+  letter-spacing:.4px
+}
+.thumb img { width:100%; height:100%; object-fit:cover; }
+.total{display:flex;gap:16px;align-items:center;justify-content:flex-end}
+.total .line{display:flex;gap:10px;align-items:center}
+.total strong{min-width:120px;display:inline-block;text-align:right}
+/* Eco progress bar */
+.eco-progress{background:#f1f5f9;border:1px solid #e5e7eb;border-radius:999px;height:12px;overflow:hidden}
+.eco-bar{height:100%;background:linear-gradient(90deg,#22c55e,#16a34a)}
+.eco-meta{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:12px;color:#475569}
+.eco-chip{display:inline-flex;align-items:center;gap:6px;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;border-radius:999px;padding:4px 8px;font-weight:700;font-size:12px}
+
+/* Dashboard */
+.dashboard{max-width:1200px;margin:0 auto;padding:24px}
+.dashboard h2{margin:0 0 16px;font-size:20px;font-weight:800}
+.dashboard .list{display:flex;flex-direction:column;gap:8px}
+.dashboard .btn{width:100%}
+.dashboard .panel{margin-bottom:16px}
+.dashboard .profile{margin-bottom:16px}
+.dashboard .profile .avatar{width:48px;height:48px}
+.dashboard .profile .stars{font-size:12px}
+.dashboard .profile .points{font-size:12px}
+.hidden{display:none !important}

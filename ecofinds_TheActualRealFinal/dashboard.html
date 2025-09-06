@@ -1,0 +1,224 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EcoFinds – Dashboard</title>
+<link rel="stylesheet" href="styles.css" />
+<script defer src="app.js"></script>
+<script defer>
+document.addEventListener('DOMContentLoaded', () => {
+  const u = requireAuth();
+  if(!u) return;
+  el('#u_email').value = u.email;
+  el('#u_username').value = u.username;
+  renderTable();
+  renderEcoCredits();
+
+  el('#saveUser').onclick = () => {
+    const users = read(storeKey.users, []);
+    const i = users.findIndex(x=>x.id===u.id);
+    users[i] = {...users[i], email: el('#u_email').value.trim(), username: el('#u_username').value.trim()};
+    write(storeKey.users, users);
+    alert('Profile saved');
+  };
+
+  el('#create').onclick = saveNew;
+});
+
+function renderTable(){
+  const u = currentUser(); if(!u) return;
+  const rows = Product.bySeller(u.id).map(p=>`
+    <tr>
+      <td>${p.title}</td>
+      <td>${money(p.price_cents)}</td>
+      <td>${p.category}</td>
+      <td>
+        ${p.years_used || 0} years
+        ${Number(p.years_used||0) >= 2 ? '<span style="color: #1f9d55; font-weight: 600; margin-left: 8px;">🌱 ECO</span>' : ''}
+      </td>
+      <td>
+        <button class="mini" onclick="prefill('${p.id}')">Edit</button>
+        <button class="mini" onclick="delProd('${p.id}')">Delete</button>
+        <a class="mini" href="product.html?id=${p.id}">View</a>
+      </td>
+    </tr>
+  `).join('');
+  el('#tbody').innerHTML = rows || '<tr><td colspan="5" class="muted">No listings yet.</td></tr>';
+}
+
+function saveNew(){
+  const u = currentUser(); if(!u) return;
+  const data = {
+    sellerId: u.id,
+    title: el('#p_title').value.trim(),
+    description: el('#p_desc').value.trim(),
+    price_cents: Number(el('#p_price').value),
+    category: el('#p_cat').value,
+    cover_image_url: el('#p_img').value.trim(), // filename in root, e.g. jacket.jpg
+    years_used: Number(el('#p_years').value) || 0
+  };
+  if(!data.title || !data.category || !data.price_cents){
+    alert('Please fill title, price, category'); return;
+  }
+  Product.create(data);
+  el('#p_title').value = ''; el('#p_desc').value = ''; el('#p_price').value = ''; el('#p_img').value=''; el('#p_years').value='';
+  renderTable();
+}
+
+function prefill(id){
+  const p = Product.find(id); if(!p) return;
+  el('#p_id').value = p.id;
+  el('#p_title').value = p.title;
+  el('#p_desc').value = p.description;
+  el('#p_price').value = (p.price_cents);
+  el('#p_cat').value = p.category;
+  el('#p_img').value = p.cover_image_url || '';
+  el('#p_years').value = p.years_used || 0;
+  el('#create').classList.add('hidden');
+  el('#update').classList.remove('hidden');
+  el('#cancel').classList.remove('hidden');
+  el('#update').onclick = () => updateProd(p.id);
+  el('#cancel').onclick = resetForm;
+}
+
+function resetForm(){
+  el('#p_id').value='';
+  el('#p_title').value='';
+  el('#p_desc').value='';
+  el('#p_price').value='';
+  el('#p_cat').value='Clothing';
+  el('#p_img').value='';
+  el('#p_years').value='';
+  el('#create').classList.remove('hidden');
+  el('#update').classList.add('hidden');
+  el('#cancel').classList.add('hidden');
+}
+
+function updateProd(id){
+  Product.update(id, {
+    title: el('#p_title').value.trim(),
+    description: el('#p_desc').value.trim(),
+    price_cents: Number(el('#p_price').value),
+    category: el('#p_cat').value,
+    cover_image_url: el('#p_img').value.trim(),
+    years_used: Number(el('#p_years').value) || 0
+  });
+  resetForm();
+  renderTable();
+}
+
+function delProd(id){
+  if(!confirm('Delete this listing?')) return;
+  Product.remove(id);
+  renderTable();
+}
+
+function renderEcoCredits(){
+  const u = currentUser(); if(!u) return;
+  const credits = u.eco_credits || 0;
+  const discountRateValue = discountRate(credits);
+  const nextTier = nextTierInfo(credits);
+  
+  el('#ecoCreditsCount').textContent = credits;
+  el('#ecoCreditsTier').textContent = discountRateValue > 0 ? `${(discountRateValue * 100).toFixed(0)}% discount` : 'No discount';
+  
+  if(nextTier.nextAt) {
+    el('#ecoCreditsNext').textContent = `Earn ${nextTier.nextAt - credits} more for ${(nextTier.rate * 100).toFixed(0)}% discount`;
+  } else {
+    el('#ecoCreditsNext').textContent = 'Maximum discount reached!';
+  }
+}
+</script>
+</head>
+<body>
+
+<header class="header">
+  <div class="nav">
+    <a class="logo" href="index.html" title="EcoFinds Home">
+      <span class="dot"></span><span>EcoFinds</span>
+    </a>
+    <form action="index.html" method="GET" class="searchbar" id="searchForm">
+      <input name="q" id="q" placeholder="Search by title…" />
+      <select name="category" id="cat">
+        <option>All</option>
+        <option>Clothing</option>
+        <option>Electronics</option>
+        <option>Furniture</option>
+        <option>Books</option>
+        <option>Sports</option>
+        <option>Kids</option>
+      </select>
+      <button class="btn" type="submit">Search</button>
+    </form>
+    <div class="header-links">
+      <a class="btn ghost" href="dashboard.html">Dashboard</a>
+      <a class="btn ghost" href="cart.html">Cart</a>
+      <a class="btn secondary" href="orders.html">My Purchases</a>
+      <button class="btn" id="postItemBtn" onclick="window.location.href='dashboard.html#new'">Post an Item</button>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="layout">
+    <main>
+      <div class="panel">
+        <h2>My Listings</h2>
+        <table class="table">
+          <thead><tr><th>Title</th><th>Price</th><th>Category</th><th>Years Used</th><th>Actions</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="panel">
+        <h3 id="formTitle">Create / Edit Listing</h3>
+        <input type="hidden" id="p_id" />
+        <div class="kv"><label>Title</label><input class="input" id="p_title" placeholder="e.g., Vintage Lamp" /></div>
+        <div class="kv"><label>Price (₹)</label><input class="input" id="p_price" placeholder="e.g., 799" /></div>
+        <div class="kv"><label>Category</label>
+          <select class="select" id="p_cat">
+            <option>Clothing</option><option>Electronics</option><option>Furniture</option>
+            <option>Books</option><option>Sports</option><option>Kids</option>
+          </select>
+        </div>
+        <div class="kv"><label>Description</label><textarea class="textarea" id="p_desc" rows="4" placeholder="Condition, pickup, etc."></textarea></div>
+        <div class="kv"><label>Image filename</label><input class="input" id="p_img" placeholder="e.g., jacket.jpg" /></div>
+        <div class="kv"><label>Years Used</label><input class="input" id="p_years" type="number" min="0" max="50" placeholder="e.g., 2" /></div>
+        <div class="list" style="margin-top:8px">
+          <button class="btn" id="create">Create Listing</button>
+          <div>
+            <button class="btn hidden" id="update">Update</button>
+            <button class="btn ghost hidden" id="cancel">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </main>
+    <aside class="side">
+      <div class="panel">
+        <h3>My Profile</h3>
+        <div class="kv"><label>Email</label><input class="input" id="u_email" /></div>
+        <div class="kv"><label>Username</label><input class="input" id="u_username" /></div>
+        <div class="list" style="margin-top:8px"><button class="btn" id="saveUser">Save Profile</button></div>
+        <hr class="sep">
+        <div class="eco-credits-section">
+          <h4>🌱 Eco Credits</h4>
+          <div class="eco-credits-display">
+            <div class="credits-count" id="ecoCreditsCount">0</div>
+            <div class="credits-tier" id="ecoCreditsTier">No discount</div>
+            <div class="credits-next" id="ecoCreditsNext">Earn 3 credits for 5% discount</div>
+          </div>
+        </div>
+        <hr class="sep">
+        <div class="notice small">Auth simplified for demo.</div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<footer class="footer small">
+  EcoFinds prototype • Desktop-only • Local demo data (stored in your browser)
+</footer>
+
+</body>
+</html>

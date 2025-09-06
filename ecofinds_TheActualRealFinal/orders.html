@@ -1,0 +1,52 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EcoFinds – Previous Purchases</title>
+<link rel="stylesheet" href="styles.css" />
+<script defer src="app.js"></script>
+<script defer>
+document.addEventListener('DOMContentLoaded', () => {
+  const u = requireAuth(); if(!u) return;
+  const list = Orders.list(u.id);
+  const wrap = el('#wrap');
+  if(list.length===0) { wrap.innerHTML = '<div class="panel">No orders yet.</div>'; return; }
+  wrap.innerHTML = list.map(o=>`
+    <div class="panel">
+      <div class="row"><div><strong>Order #</strong> ${o.id}</div><div>${new Date(o.created_at).toLocaleString()}</div></div>
+      <table class="table" style="margin-top:8px">
+        <thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Line Total</th></tr></thead>
+        <tbody>
+          ${o.items.map(it=>`
+            <tr><td>${it.title_snapshot} ${it.is_eco ? '🌱' : ''}</td><td>${it.qty}</td><td>${money(it.price_cents_snapshot)}</td><td>${money(it.price_cents_snapshot*it.qty)}</td></tr>
+          `).join('')}
+        </tbody>
+      </table>
+      <div class="order-summary">
+        ${o.subtotal_cents !== undefined ? `<div class="row"><div></div><div><strong>Subtotal:</strong> ${money(o.subtotal_cents)}</div></div>` : ''}
+        ${o.discount_cents > 0 ? `<div class="row"><div></div><div><strong>Eco Discount:</strong> -${money(o.discount_cents)}</div></div>` : ''}
+        ${o.eco_credits_earned > 0 ? `<div class="row"><div></div><div><strong>🌱 Eco Credits Earned:</strong> ${o.eco_credits_earned}</div></div>` : ''}
+        <div class="row"><div></div><div><strong>Total:</strong> ${money(o.total_cents)}</div></div>
+      </div>
+    </div>
+  `).join('');
+});
+</script>
+</head>
+<body>
+<header class="header">
+  <div class="nav">
+    <a class="logo" href="index.html"><span class="dot"></span><span>EcoFinds</span></a>
+    <div class="header-links">
+      <a class="btn ghost" href="dashboard.html">Dashboard</a>
+      <a class="btn ghost" href="cart.html">Cart</a>
+      <a class="btn secondary" href="orders.html">My Purchases</a>
+    </div>
+  </div>
+</header>
+<div class="container" id="wrap"></div>
+<footer class="footer small">EcoFinds prototype • Desktop-only • Local demo data</footer>
+</body>
+</html>

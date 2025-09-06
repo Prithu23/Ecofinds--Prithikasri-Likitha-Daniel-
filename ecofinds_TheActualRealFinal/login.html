@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EcoFinds – Login / Signup</title>
+
+  <!-- Use the shared app backend -->
+  <script defer src="app.js"></script>
+
+  <style>
+    body {
+      background-color: #195425;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 40' width='80' height='40'%3E%3Cpath fill='%232d7a36' fill-opacity='0.4' d='M0 40a19.96 19.96 0 0 1 5.9-14.11 20.17 20.17 0 0 1 19.44-5.2A20 20 0 0 1 20.2 40H0zM65.32.75A20.02 20.02 0 0 1 40.8 25.26 20.02 20.02 0 0 1 65.32.76zM.07 0h20.1l-.08.07A20.02 20.02 0 0 1 .75 5.25 20.08 20.08 0 0 1 .07 0zm1.94 40h2.53l4.26-4.24v-9.78A17.96 17.96 0 0 0 2 40zm5.38 0h9.8a17.98 17.98 0 0 0 6.67-16.42L7.4 40zm3.43-15.42v9.17l11.62-11.59c-3.97-.5-8.08.3-11.62 2.42zm32.86-.78A18 18 0 0 0 63.85 3.63L43.68 23.8zm7.2-19.17v9.15L62.43 2.22c-3.96-.5-8.05.3-11.57 2.4zm-3.49 2.72c-4.1 4.1-5.81 9.69-5.13 15.03l6.61-6.6V6.02c-.51.41-1 .85-1.48 1.33zM17.18 0H7.42L3.64 3.78A18 18 0 0 0 17.18 0zM2.08 0c-.01.8.04 1.58.14 2.37L4.59 0H2.07z'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: repeat; background-size: auto;
+      font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center;
+      height: 100vh; margin: 0; padding: 10px;
+    }
+    .container {
+      background: white; padding: 25px 30px; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.10);
+      width: 100%; max-width: 400px; box-sizing: border-box; position: relative; z-index: 1;
+    }
+    h2 { text-align: center; margin-bottom: 20px; font-weight: 600; color: #2c3e50; }
+    label { font-size: 14px; font-weight: 600; display: block; margin-bottom: 6px; color: #34495e; }
+    input[type="email"], input[type="password"], input[type="text"] {
+      width: 100%; padding: 12px 50px 12px 14px; margin-bottom: 15px;
+      border: 1.5px solid #bdc3c7; border-radius: 6px; font-size: 16px; box-sizing: border-box;
+      transition: border-color 0.2s; background: #fff;
+    }
+    input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focus {
+      outline: none; border-color: #888; box-shadow: none;
+    }
+    .checkbox-group { display: flex; align-items: center; margin-bottom: 15px; }
+    .checkbox-group input { margin-right: 8px; }
+    button {
+      width: 100%; padding: 12px; background-color: #4caf50; border: none; color: white;
+      font-size: 18px; font-weight: 600; border-radius: 6px; cursor: pointer; transition: background-color 0.3s ease;
+    }
+    button:hover:not(:disabled) { background-color: #43a047; }
+    button:disabled { background-color: #a5d6a7; cursor: not-allowed; }
+    .toggle-link { text-align: center; margin-top: 15px; cursor: pointer; color: #007bff; text-decoration: underline; font-size: 14px; }
+    .error { color: #e74c3c; font-size: 14px; margin-bottom: 12px; min-height: 18px; }
+    .password-toggle { position: relative; width: 100%; margin-bottom: 15px; }
+    .toggle-password-text {
+      position: absolute; top: 50%; right: 14px; transform: translateY(-50%);
+      background: none !important; border: none !important; color: #666 !important;
+      font-size: 14px; font-weight: 600; padding: 0; margin: 0; cursor: pointer; outline: none;
+      user-select: none; box-shadow: none !important; display: inline-block; height: auto; width: auto; min-width: 0; min-height: 0;
+    }
+    .toggle-password-text:focus, .toggle-password-text:active {
+      color: #222 !important; background: none !important; border: none !important; box-shadow: none !important; text-decoration: underline;
+    }
+    .password-strength { min-height: 18px; font-size: 13px; margin-top: -8px; margin-bottom: 10px; color: #e67e22; }
+    .password-strength.strong { color: #27ae60; }
+    .password-strength.weak { color: #e74c3c; }
+    .loading-spinner {
+      display: inline-block; width: 18px; height: 18px; border: 3px solid rgba(255, 255, 255, 0.6);
+      border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; vertical-align: middle; margin-left: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Login Form -->
+    <form id="login-form" aria-label="Login form">
+      <h2>Login</h2>
+      <div class="error" id="login-error" role="alert" aria-live="assertive"></div>
+      <label for="login-email">Email</label>
+      <input type="email" id="login-email" name="login-email" placeholder="Email" required autocomplete="username" />
+
+      <label for="login-password">Password</label>
+      <div class="password-toggle">
+        <input type="password" id="login-password" name="login-password" placeholder="Password" required autocomplete="current-password" />
+        <button type="button" class="toggle-password-text" id="login-password-toggle" tabindex="-1" aria-label="Show or hide password">Show</button>
+      </div>
+
+      <div class="checkbox-group">
+        <input type="checkbox" id="remember-me" name="remember-me" />
+        <label for="remember-me" style="margin: 0;">Remember me</label>
+      </div>
+      <button type="submit" id="login-submit">Login</button>
+      <div class="toggle-link" id="show-signup">Don't have an account? Sign Up</div>
+    </form>
+
+    <!-- Signup Form -->
+    <form id="signup-form" aria-label="Signup form" style="display:none;">
+      <h2>Sign Up</h2>
+      <div class="error" id="signup-error" role="alert" aria-live="assertive"></div>
+
+      <label for="signup-username">Username</label>
+      <input type="text" id="signup-username" name="signup-username" placeholder="Username" minlength="3" required autocomplete="username" />
+
+      <label for="signup-email">Email</label>
+      <input type="email" id="signup-email" name="signup-email" placeholder="Email" required autocomplete="email" />
+
+      <label for="signup-password">Password</label>
+      <div class="password-toggle">
+        <input type="password" id="signup-password" name="signup-password" placeholder="Password" minlength="6" required autocomplete="new-password" />
+        <button type="button" class="toggle-password-text" id="signup-password-toggle" tabindex="-1" aria-label="Show or hide password">Show</button>
+      </div>
+      <div class="password-strength" id="password-strength"></div>
+
+      <label for="signup-password-confirm">Confirm Password</label>
+      <div class="password-toggle">
+        <input type="password" id="signup-password-confirm" name="signup-password-confirm" placeholder="Confirm Password" minlength="6" required autocomplete="new-password" />
+        <button type="button" class="toggle-password-text" id="signup-password-confirm-toggle" tabindex="-1" aria-label="Show or hide password">Show</button>
+      </div>
+
+      <button type="submit" id="signup-submit">Sign Up</button>
+      <div class="toggle-link" id="show-login">Already have an account? Login</div>
+    </form>
+  </div>
+
+  <script>
+    // ----- UI helpers -----
+    function setupPasswordToggle(inputId, toggleId) {
+      const input = document.getElementById(inputId);
+      const toggle = document.getElementById(toggleId);
+      toggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (input.type === 'password') { input.type = 'text'; toggle.textContent = 'Hide'; }
+        else { input.type = 'password'; toggle.textContent = 'Show'; }
+      });
+    }
+    setupPasswordToggle('login-password', 'login-password-toggle');
+    setupPasswordToggle('signup-password', 'signup-password-toggle');
+    setupPasswordToggle('signup-password-confirm', 'signup-password-confirm-toggle');
+
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+
+    document.getElementById('show-signup').addEventListener('click', () => {
+      loginForm.style.display = 'none';
+      signupForm.style.display = 'block';
+      clearErrors();
+    });
+    document.getElementById('show-login').addEventListener('click', () => {
+      signupForm.style.display = 'none';
+      loginForm.style.display = 'block';
+      clearErrors();
+    });
+
+    function clearErrors() {
+      document.getElementById('login-error').textContent = '';
+      document.getElementById('signup-error').textContent = '';
+      document.getElementById('password-strength').textContent = '';
+      document.getElementById('password-strength').className = 'password-strength';
+    }
+
+    // simpler + safe email format
+    function validateEmail(email) {
+      return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+    }
+
+    // password strength (unchanged)
+    function isStrongPassword(password) {
+      return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%?&])[A-Za-z\d@$!%?&]{6,}$/.test(password);
+    }
+
+    function showError(id, message) {
+      document.getElementById(id).textContent = message;
+    }
+
+    function setLoading(button, isLoading) {
+      if (isLoading) {
+        button.disabled = true;
+        const spinner = document.createElement('span');
+        spinner.className = 'loading-spinner';
+        spinner.id = button.id + '-spinner';
+        button.appendChild(spinner);
+      } else {
+        button.disabled = false;
+        const spinner = document.getElementById(button.id + '-spinner');
+        if (spinner) button.removeChild(spinner);
+      }
+    }
+
+    // Live password strength UI
+    const signupPassword = document.getElementById('signup-password');
+    const passwordStrength = document.getElementById('password-strength');
+    signupPassword.addEventListener('input', () => {
+      const pwd = signupPassword.value;
+      if (pwd.length === 0) {
+        passwordStrength.textContent = '';
+        passwordStrength.className = 'password-strength';
+      } else if (isStrongPassword(pwd)) {
+        passwordStrength.textContent = 'Strong password';
+        passwordStrength.className = 'password-strength strong';
+      } else {
+        passwordStrength.textContent = 'Weak password: use uppercase, lowercase, number, special char';
+        passwordStrength.className = 'password-strength weak';
+      }
+    });
+
+    // ----- Integration with EcoFinds localStorage backend from app.js -----
+
+    // Login: check ecf_users (case-insensitive email), set ecf_session, go to index.html
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      clearErrors();
+      const email = loginForm['login-email'].value.trim().toLowerCase(); // normalize
+      const password = loginForm['login-password'].value.trim();
+      // const rememberMe = loginForm['remember-me'].checked; // (localStorage is already persistent)
+
+      if (!validateEmail(email)) { showError('login-error', 'Please enter a valid email.'); return; }
+      if (password.length < 6) { showError('login-error', 'Password must be at least 6 characters.'); return; }
+
+      const btn = document.getElementById('login-submit');
+      setLoading(btn, true);
+      try {
+        const users = read(storeKey.users, []);
+        const u = users.find(x => (x.email||'').toLowerCase() === email && x.password === password);
+        if (!u) { showError('login-error', 'Invalid email or password.'); setLoading(btn, false); return; }
+        write(storeKey.session, { userId: u.id });
+        window.location.href = 'index.html';
+      } catch (err) {
+        showError('login-error', 'Login failed. Please try again.');
+        setLoading(btn, false);
+      }
+    });
+
+    // Signup: create user (store lowercase email), prevent dupes (case-insensitive), set session, go to index.html
+    signupForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      clearErrors();
+      const username = signupForm['signup-username'].value.trim();
+      const emailRaw = signupForm['signup-email'].value.trim();
+      const email = emailRaw.toLowerCase(); // normalize
+      const password = signupForm['signup-password'].value.trim();
+      const passwordConfirm = signupForm['signup-password-confirm'].value.trim();
+
+      if (username.length < 3) { showError('signup-error', 'Username must be at least 3 characters.'); return; }
+      if (!validateEmail(email)) { showError('signup-error', 'Please enter a valid email.'); return; }
+      if (!isStrongPassword(password)) {
+        showError('signup-error', 'Password must be 6+ chars and include uppercase, lowercase, digit, and special char.');
+        return;
+      }
+      if (password !== passwordConfirm) { showError('signup-error', 'Passwords do not match.'); return; }
+
+      const btn = document.getElementById('signup-submit');
+      setLoading(btn, true);
+      try {
+        const users = read(storeKey.users, []);
+        if (users.some(u => (u.email||'').toLowerCase() === email)) {
+          showError('signup-error', 'Email already exists.');
+          setLoading(btn, false);
+          return;
+        }
+        const u = { id: uid(), email, username, password, points: 0, rating: 4.0, eco_credits: 0 };
+        users.push(u); write(storeKey.users, users);
+        setLoading(btn, false);
+        alert('Account created successfully! Please log in.');
+        // Switch to login form instead of redirecting
+        signupForm.style.display = 'none';
+        loginForm.style.display = 'block';
+        clearErrors();
+        // Pre-fill the email in the login form
+        document.getElementById('login-email').value = email;
+      } catch (err) {
+        showError('signup-error', 'Signup failed. Please try again.');
+        setLoading(btn, false);
+      }
+    });
+  </script>
+</body>
+</html>

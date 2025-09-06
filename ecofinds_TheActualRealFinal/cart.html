@@ -1,0 +1,144 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EcoFinds – Cart</title>
+<link rel="stylesheet" href="styles.css" />
+<script defer src="app.js"></script>
+<script defer>
+document.addEventListener('DOMContentLoaded', () => {
+  const u = requireAuth(); if(!u) return;
+  render();
+  el('#checkout').onclick = () => {
+    if(Cart.items(u.id).length===0) return alert('Cart is empty');
+    
+    // Calculate eco credits that will be earned
+    const items = Cart.items(u.id);
+    const prodMap = Object.fromEntries(Product.all().map(p=>[p.id,p]));
+    let ecoCreditsEarned = 0;
+    items.forEach(ci => {
+      const p = prodMap[ci.productId];
+      if(isEco(p)) {
+        ecoCreditsEarned += ci.qty;
+      }
+    });
+    
+    const order = Orders.createFromCart(u.id);
+    let message = 'Order placed!';
+    if(ecoCreditsEarned > 0) {
+      message += `\n\n🌱 You earned ${ecoCreditsEarned} eco credit${ecoCreditsEarned > 1 ? 's' : ''}!`;
+    }
+    alert(message);
+    window.location.href = 'orders.html';
+  }
+});
+
+function render(){
+  const u = currentUser(); if(!u) return;
+  const items = Cart.items(u.id);
+  const prodMap = Object.fromEntries(Product.all().map(p=>[p.id,p]));
+  let subtotal = 0;
+  
+  // Display eco credits info
+  const credits = u.eco_credits || 0;
+  const discountRateValue = discountRate(credits);
+  el('#userCredits').textContent = credits;
+  el('#discountTier').textContent = discountRateValue > 0 ? `${(discountRateValue * 100).toFixed(0)}% discount` : 'No discount';
+  
+  // Calculate and display eco credits that will be earned
+  let ecoCreditsEarned = 0;
+  items.forEach(ci => {
+    const p = prodMap[ci.productId];
+    if(isEco(p)) {
+      ecoCreditsEarned += ci.qty;
+    }
+  });
+  
+  if(ecoCreditsEarned > 0) {
+    el('#creditsEarned').textContent = `You'll earn ${ecoCreditsEarned} eco credit${ecoCreditsEarned > 1 ? 's' : ''} from this purchase!`;
+  } else {
+    el('#creditsEarned').textContent = '';
+  }
+  
+  el('#tbody').innerHTML = items.map(ci=>{
+    const p = prodMap[ci.productId];
+    const line = (p?.price_cents||0)*ci.qty;
+    subtotal += line;
+    return `<tr>
+      <td>${p?.title||'Unknown'} ${isEco(p) ? '🌱' : ''}</td>
+      <td>${money(p?.price_cents||0)}</td>
+      <td><input class="input" style="width:80px" type="number" min="1" value="${ci.qty}" onchange="updateQty('${ci.productId}', this.value)" /></td>
+      <td>${money(line)}</td>
+      <td><button class="mini" onclick="removeItem('${ci.productId}')">Remove</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" class="muted">Your cart is empty.</td></tr>';
+  
+  // Calculate discount
+  const discountAmount = subtotal * discountRateValue;
+  const total = subtotal - discountAmount;
+  
+  el('#subtotal').textContent = money(subtotal);
+  el('#total').textContent = money(total);
+  
+  // Show/hide discount row
+  if(discountAmount > 0) {
+    el('#discountRow').style.display = 'block';
+    el('#discountAmount').textContent = money(discountAmount);
+  } else {
+    el('#discountRow').style.display = 'none';
+  }
+}
+
+function updateQty(pid, qty){
+  const u = currentUser(); if(!u) return;
+  Cart.update(u.id, pid, Math.max(1, Number(qty||1)));
+  render();
+}
+function removeItem(pid){
+  const u = currentUser(); if(!u) return;
+  Cart.update(u.id, pid, 0);
+  render();
+}
+</script>
+</head>
+<body>
+<header class="header">
+  <div class="nav">
+    <a class="logo" href="index.html"><span class="dot"></span><span>EcoFinds</span></a>
+    <div class="header-links">
+      <a class="btn ghost" href="dashboard.html">Dashboard</a>
+      <a class="btn ghost" href="cart.html">Cart</a>
+      <a class="btn secondary" href="orders.html">My Purchases</a>
+    </div>
+  </div>
+</header>
+<div class="container">
+  <div class="panel">
+    <h2>Cart</h2>
+    <table class="table">
+      <thead><tr><th>Item</th><th>Price</th><th>Qty</th><th>Line Total</th><th></th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="eco-credits-section" style="margin-top:15px; padding:10px; background:#f0f8f0; border-radius:4px;">
+      <h4>🌱 Eco Credits</h4>
+      <div class="row">
+        <div>Your credits: <strong id="userCredits">0</strong></div>
+        <div>Discount tier: <span id="discountTier">No discount</span></div>
+      </div>
+      <div id="creditsEarned" style="margin-top:5px; font-size:0.9em; color:#2d5a2d;"></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="muted">Previous purchases are in <a class="link" href="orders.html">My Purchases</a></div>
+      <div>
+        <div><strong>Subtotal:</strong> <span id="subtotal">₹0.00</span></div>
+        <div id="discountRow" style="display:none;"><strong>Eco Discount:</strong> -<span id="discountAmount">₹0.00</span></div>
+        <div><strong>Total:</strong> <span id="total">₹0.00</span> &nbsp; <button class="btn" id="checkout">Checkout</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+<footer class="footer small">EcoFinds prototype • Desktop-only • Local demo data</footer>
+</body>
+</html>
